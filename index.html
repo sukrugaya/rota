@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #language-options {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+        }
+
+        #language-options select {
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        #map-container {
+            border: 5px solid #FF7F00;
+            margin: 5px;
+            border-radius: 10px;
+            height: 500px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        #route-menu {
+            margin-top: 5px;
+            display: flex;
+            overflow: auto;
+            
+        }
+
+        #route-menu a {
+            flex: 0 0 18%;
+            margin: 1%;
+            padding: 5px;
+            box-sizing: border-box;
+            background-color: #f4f4f4;
+            color: blue;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        #route-menu a:hover {
+            background-color: #ddd;
+        }
+
+        #large-image-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            text-align: center;
+        }
+
+        #large-image {
+            max-width: 80%;
+            max-height: 80%;
+        }
+
+        #close-button {
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #888;
+        }
+
+        #info-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .route-info {
+            margin-top: 20px;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .route-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+        }
+    </style>
+    <title>Gezi Rotası</title>
+</head>
+<body>
+    <div id="language-options">
+        <label for="language-select"> </label>
+        <select id="language-select" onchange="changeLanguage()">
+	    <option value="tr">Türkçe</option>
+            <option value="en">English</option>    
+        </select>
+    </div>
+
+    <h1 id="page-title">Gezi Rotası</h1>
+
+    <div id="route-menu">
+        <a href="rota1.html">Route 1</a>
+        <a href="rota2.html">Route 2</a>
+	<a href="rota3.html">Route 3</a>
+	<a href="rota4.html">Route 4</a>
+	<a href="rota5.html">Route 5</a>
+    </div>
+
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div id="large-image-container">
+        <span id="close-button" onclick="closeLargeImage()">&#10006;</span>
+        <img id="large-image" src="" alt="Large Image">
+    </div>
+
+    <div id="info-container">
+        <div id="locations-info" class="route-info">
+            <h2 id="locations-title">Gezi Rotası Bilgileri</h2>
+            <img src="images/rotaimage.jpg" alt="Gezi Rotası Resmi" class="route-image">
+            <p id="locations-text">Adam Kayalar ve Cennet Cehennem gibi doğal güzellikleri, Ayatekla ve Alahan Manastırı gibi dini turizm alanlarını içeren bir rota.</p>
+        </div>
+        
+       
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([36.524201103902705, 33.701342422127595], 9);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var locations = [
+             { name: 'Cennet Cehennem Sinkhole', lat: 36.45261099031024, lon: 34.10507992390044, image: 'cennet_cehennem.jpg', info: 'A natural formation', likes: 0, icon: 'icon/cennet_cehennem.png' },
+            { name: 'Astım Cave', lat: 36.46478371475458, lon: 34.085581112974204, image: 'astim_magarasi.jpg', info: 'You can do cave exploration', likes: 0, icon: 'icon/astim_magarasi.png' },
+            { name: 'Adamkayalar Rock Relief', lat: 36.482842343309464, lon: 34.120200584790304, image: 'adam_kayalar.jpg', info: 'A natural formation', likes: 0, icon: 'icon/adam_kayalar.png' },
+            { name: 'Olba Ancient Town', lat: 36.58550632600655, lon: 33.964177206702836, image: 'olba_antik_kenti.jpg', info: 'An ancient relic', likes: 0, icon: 'icon/olba_antik_kenti.png' },
+            { name: 'Uzuncaburç Acieent Town', lat: 36.581424496979324, lon: 33.92406418962461, image: 'uzuncaburc.jpg', info: 'An ancient relic', likes: 0, icon: 'icon/uzuncaburc.png' },
+            { name: 'AyaTekla Church', lat: 36.36572776857048, lon: 33.93060119348331, image: 'ayatekla.jpg', info: 'Religious Tourism', likes: 0, icon: 'icon/ayatekla.png' },
+            { name: 'Mut Castle, Mersin', lat: 36.64467453862331, lon: 33.43455463739014, image: 'mutkalesi.jpg', info: 'A beautiful castle', likes: 0, icon: 'icon/mutkalesi.png' },
+            { name: 'Alahan Monastery', lat: 36.79150477641965, lon: 33.353915535338075, image: 'alahan_manastiri.jpg', info: 'Religious Tourism', likes: 0, icon: 'icon/alahan_manastiri.png' },
+            { name: 'Aloda Church', lat: 36.7892161228046, lon: 33.33887766993055, image: 'aloda_kilisesi.jpg', info: 'Religious Tourism', likes: 0, icon: 'icon/aloda_kilisesi.png' },
+            { name: 'Dağpazarı Church', lat: 36.84137975630889, lon: 33.498782043843995, image: 'dagpazari_kilisesi.jpg', info: 'Religious Tourism', likes: 0, icon: 'icon/dagpazari_kilisesi.png' },
+        ];
+
+        var foods = [ 
+            { name: 'Food and Rest ', lat: 36.39189110119794, lon: 33.70302735150057, image: 'food_location.jpg', info: 'Food Menu: Mantı ... $, Salad .... $', likes: 0, icon: 'icon/food_location.png' },
+	    { name: 'Accommodation', lat: 36.664987323413236, lon: 33.762083619658966, image: 'commod_location.jpg', info: 'The price of accommodation is per night: ...$ ', likes: 0, icon: 'icon/konak_location.png' },
+            // Diğer yemek ve dinlenme noktaları buraya eklenecek
+        ];
+
+        var markers = [];
+        var locationCoordinates = [];
+        var foodCoordinates = [];
+
+        // Gezi Rotası İçin Markörleri ve Koordinatları Oluştur
+        for (var i = 0; i < locations.length; i++) {
+            var markerIcon = L.icon({
+                iconUrl: locations[i].icon,
+                iconSize: [25, 25],
+                iconAnchor: [12, 25],
+                popupAnchor: [1, -34]
+            });
+
+            var marker = L.marker([locations[i].lat, locations[i].lon], { icon: markerIcon })
+                .addTo(map)
+                .bindPopup(getPopupContent(locations[i]));
+
+            markers.push(marker);
+            locationCoordinates.push([locations[i].lat, locations[i].lon]);
+        }
+
+        var locationRoute = L.polyline(locationCoordinates, { color: 'red' }).addTo(map);
+
+        // Yemek ve Dinlenme Rotası İçin Markörleri ve Koordinatları Oluştur
+        for (var j = 0; j < foods.length; j++) {
+            var foodMarkerIcon = L.icon({
+                iconUrl: foods[j].icon,
+                iconSize: [25, 25],
+                iconAnchor: [12, 25],
+                popupAnchor: [1, -34]
+            });
+
+            var foodMarker = L.marker([foods[j].lat, foods[j].lon], { icon: foodMarkerIcon })
+                .addTo(map)
+                .bindPopup(getPopupContent(foods[j]));
+
+            markers.push(foodMarker);
+            foodCoordinates.push([foods[j].lat, foods[j].lon]);
+        }
+
+       
+
+        function showRoute(routeName) {
+            if (routeName === 'locations') {
+                map.fitBounds(locationRoute.getBounds());
+            } else if (routeName === 'foods') {
+                map.fitBounds(foodRoute.getBounds());
+            }
+        }
+
+        map.on('click', function () {
+            closeLargeImage();
+        });
+
+        function likeLocation(name) {
+            var location = findLocationByName(name);
+            if (location) {
+                location.likes++;
+                updatePopupContent(location);
+            }
+        }
+
+        function findLocationByName(name) {
+            for (var i = 0; i < locations.length; i++) {
+                if (locations[i].name === name) {
+                    return locations[i];
+                }
+            }
+            return null;
+        }
+
+        function updatePopupContent(location) {
+            var popup = location._popup;
+            popup.setContent(getPopupContent(location));
+        }
+
+        function getPopupContent(location) {
+            var startRouteText = (location.name === 'Cennet Cehennem' || location.name === 'Dağpazarı Kilisesi') ? 'Start' : '';
+            return '<h3>' + location.name + '</h3><img src="images/' + location.image + '" alt="' + location.name + '" width="200" onclick="showLargeImage(\'images/' + location.image + '\')"><p>' + location.info + '</p>' +
+                '<div class="like-buttons">' +
+                '<span class="like-count" id="like-count-' + location.name + '">' + location.likes + ' Beğeni</span>' +
+                '<span class="like-button" onclick="likeLocation(\'' + location.name + '\')">Beğen</span>' +
+                '</div>' +
+                '<p>' + startRouteText + '</p>';
+        }
+
+        function showLargeImage(imageUrl) {
+            var largeImage = document.getElementById('large-image');
+            largeImage.src = imageUrl;
+            document.getElementById('large-image-container').style.display = 'block';
+        }
+
+        function closeLargeImage() {
+            document.getElementById('large-image-container').style.display = 'none';
+        }
+
+        function changeLanguage() {
+            var languageSelect = document.getElementById('language-select');
+            var selectedLanguage = languageSelect.value;
+
+            // Burada seçilen dil ile ilgili gerekli işlemleri yapabilirsiniz.
+            // Örneğin, sayfadaki metinleri çevirmek veya farklı bir API kullanarak dil değiştirmek.
+
+            // Şu an sadece seçilen dili console'a yazdırıyorum.
+            console.log('language:', selectedLanguage);
+
+            // Seçilen dile göre metinleri değiştir
+            if (selectedLanguage === 'en') {
+                document.getElementById('page-title').innerText = 'Travel Route';
+                document.getElementById('locations-title').innerText = 'Travel Route Information';
+                document.getElementById('locations-text').innerText = 'A route that includes natural beauties such as Adam Kayalar and Cennet Cehennem and religious tourism sites such as Ayatekla and Alahan Monastery.';
+                document.getElementById('foods-title').innerText = 'Food and Rest Route Information';
+                document.getElementById('foods-text').innerText = 'A route where you can try flavors like Sarma, Dolma.';
+            } else if (selectedLanguage === 'tr') {
+                document.getElementById('page-title').innerText = 'Gezi Rotası';
+                document.getElementById('locations-title').innerText = 'Gezi Rotası Bilgileri';
+                document.getElementById('locations-text').innerText = 'Adam Kayalar ve Cennet Cehennem gibi doğal güzellikleri, Ayatekla ve Alahan Manastırı gibi dini turizm alanlarını içeren bir rota.';
+                document.getElementById('foods-title').innerText = 'Yemek ve Dinlenme Rotası Bilgileri';
+                document.getElementById('foods-text').innerText = 'Sarma, dolma gibi lezzetleri deneyebileceğiniz bir rota.';
+            }
+        }
+    </script>
+</body>
+</html>

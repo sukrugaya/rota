@@ -1,0 +1,10 @@
+ image: 'kizkalesi.jpg' },
+ image: 'uzuncaburc.jpg' },
+ image: 'cennet_cehennem.jpg' },
+ image: 'astim_magarasi.jpg' },
+ image: 'adam_kayalar.jpg' },
+ image: 'olba_antik_kenti.jpg' },
+ image: 'ayatekla.jpg' },
+ image: 'alahan_manastiri.jpg' },
+ image: 'aloda_kilisesi.jpg' },
+ image: 'dagpazari_kilisesi.jpg' 
